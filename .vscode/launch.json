@@ -5,16 +5,12 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug",
+            "name": "Python: Current File",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/main.Py",
+            "program": "${file}",
             "console": "integratedTerminal"
-}
-    ]
-}
+        },
 
-{
-    // to fix 'Timeout waiting for debugger connections'
-    "python.terminal.activateEnvironment": false
+    ]
 }

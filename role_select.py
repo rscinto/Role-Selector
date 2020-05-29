@@ -17,9 +17,9 @@
 #* one of these will have 3
 
 #manning array of a team of 12
-# [1,1,1,1,1,2,3,2]
+# [1,1,1,1,1,2,3*,2]
 
-#Ask user for name and top 5 picks
+#Ask user for name and top 6 picks
     #looped routine with a switch
 #Create a scientist object and confgure(name Choices)
 #Shuffle Scientists
@@ -35,6 +35,7 @@
 
 #randomizes the roster
 import random
+from queue import Queue
 
 NUM_CHOICES = 6
 NUM_POSITIONS = 12
@@ -44,25 +45,6 @@ NUM_Scientists = 12
 class Scientist:
 
     role = 0
-
-    def getRole(self):
-        if self.role == 1:
-            return "Project Manager"
-        elif self.role == 2:
-            return "Deputy Project Manager"
-        elif self.role == 3:
-            return "Lead Engi"
-        elif self.role == 4:
-            return "Lead Sci"
-        elif self.role == 5:
-            return "Lead Admin"
-        elif self.role == 6:
-            return "Engineer"
-        elif self.role == 7:
-            return "Scientist"
-        else:
-            return "Admin"
-    #End getRole
 
     def __init__(self, name, topSix):
 
@@ -81,11 +63,26 @@ class Scientist:
 #priming read for name
 userName = str(input('What is your name? (0 to quit): '))
 
-#declare Roster of sccientists
-roster = []
+nameRoster = []
+nameRoster.append(userName)
+
+while userName != "0":
+    userName = str(input('What is your name? (0 to quit): '))
+    if userName != "0":
+        nameRoster.append(userName)
+
+random.shuffle(nameRoster)
+
+
+#declare Roster of scientists
+roster = Queue(NUM_Scientists)
+
+randomPerson = nameRoster.pop()
+
+personnelAdded = 0
 
 #Scientist Entry Routine
-while userName != "0":
+while nameRoster:
 
     userChoices = [None] * BUFFER
     
@@ -99,19 +96,22 @@ while userName != "0":
     print("#7 Sci")
     print("#8 Admin")
 
+    print("Scientist: ", randomPerson)
     for index in range(0, NUM_CHOICES):
         print('Choice :', index + 1)
         userChoices[index] = int(input("Position #: "))
         #userChoices.append(int(input("Position #: ")))
 
-    newScientist = Scientist(userName, userChoices)
-    roster.append(newScientist)
-    userName = str(input('What is your name? (0 to quit): '))
+    newScientist = Scientist(randomPerson, userChoices)
+    roster.put(newScientist)
+    personnelAdded = personnelAdded + 1
+
+    if nameRoster:
+        randomPerson = nameRoster.pop()
 #END WHILE
 
 #randomization routine is done 10 times because CPU time is cheap
-#for i in range(0, 10):
-    #random.shuffle(roster)
+
 
 #create role roster
 #list of user choices
@@ -140,8 +140,6 @@ while userName != "0":
 #13 Admin
 #14 *Admin
 #puts string names into positions 1-14
-rosterNumber = 0
-roleRoster = []
 
 #routine fills the first  positions
 #later routine will go past whos left and 
@@ -149,8 +147,11 @@ roleRoster = []
 
 #going through the first 8 roles
 #prime internal temp
-temp = roster.pop()
-for x in range(1,8):
+temp = roster.get() 
+
+passes = 0 
+
+for x in range(1,9):
 
     positionFilled = False
     
@@ -158,21 +159,38 @@ for x in range(1,8):
 
         #goes through user selected roles
         for z in range(0,6):
+
             #checks all in roster for 1st pick, 2nd and so on
             if temp.topSix[z] == x:
                 temp.role = x
-                roleRoster.append(temp)
                 positionFilled = True
+                print('Name: ', temp.name)
+                print('Role: ', temp.role)
+
+                if roster:
+                    temp = roster.get() 
+                passes = 0
                 break
             #last resort fullfillment
-            elif z == 5 and not positionFilled:
+            elif passes > 24:
                 temp.role = x
-                roleRoster.append(temp)
                 positionFilled = True
+
+                print('Name: ', temp.name)
+                print('Role: ', temp.role)
+
+                if roster:
+                    temp = roster.get()
+                passes = 0
+
                 break
             else:
-                roster.append(temp)
-                temp = roster.pop()
+                roster.put(temp)
+                passes = passes + 1
+                temp = roster.get()
+            
+            
+            #temp = roster.pop(-1)
         #END for loop
     #End While
 #END OVERALL ROSTER FORLOOP
@@ -185,7 +203,10 @@ for x in range(1,8):
 #if it can't then it will assign randomly
 numPasses = 0
 
-while roster.count > 0:
+
+
+
+while roster:
 
     for x in range(6,9):
 
@@ -198,28 +219,39 @@ while roster.count > 0:
                 #checks all in roster for 1st pick, 2nd and so on
                 if temp.topSix[z] == x:
                     temp.role = x
-                    roleRoster.append(temp)
-                    positionFilled = True
-                    break
-                #last resort fullfillment 
-                elif numPasses > 5:
-                    temp.role = x
-                    roleRoster.append(temp)
-                    positionFilled = True
-                    break
 
+                    print('Name: ', temp.name)
+                    print('Role: ', temp.role)
+
+                    positionFilled = True
+
+                    if roster:
+                        temp = roster.get()
+                    break
+                elif numPasses > 15:
+                    temp.role = x
+
+                    print('Name: ', temp.name)
+                    print('Role: ', temp.role)
+
+                    positionFilled = True
+                    if roster:
+                        temp = roster.get()
+                    numPasses = 0
+
+                    break
                 else:
-                    roster.append(temp)
-                    temp = roster.pop()
+                    roster.put(temp)
+                    temp = roster.get()
                     numPasses = numPasses + 1
             #END for loop
         #End While     while not filled
     #END FORLOOP     Engi, Sci and Admin
 #End While         Not empty roster
-    
 
-for Scientist in roleRoster:
-    print('Name: ' + Scientist.name + ' Role: ' + Scientist.role)
+
+
+    
 
 #team roles assigning who's left 
 #going through roster 6,7,8 until no more people left. 
